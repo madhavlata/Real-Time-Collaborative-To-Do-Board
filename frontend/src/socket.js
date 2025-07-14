@@ -1,5 +1,8 @@
 import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:5000", {
-  autoConnect: false, // we’ll call connect() after login
-});
+export const socket = io(
+  "https://real-time-collaborative-to-do-board-qzkn.onrender.com/",
+  {
+    autoConnect: false, // we’ll call connect() after login
+  }
+);
