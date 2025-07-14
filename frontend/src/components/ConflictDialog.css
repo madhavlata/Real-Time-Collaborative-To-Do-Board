@@ -1,0 +1,22 @@
+.conflict-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1rem;
+}
+
+.conflict-table th,
+.conflict-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem;
+    vertical-align: top;
+}
+
+.conflict-table .diff {
+    background: #ffeaea;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}

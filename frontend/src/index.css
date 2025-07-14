@@ -1,0 +1,114 @@
+body {
+  margin: 0;
+  font-family: system-ui;
+  background: #f4f4f4;
+}
+
+.auth-box {
+  max-width: 320px;
+  margin: 80px auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #0002;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: .5rem;
+  margin: .5rem 0;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: .6rem;
+}
+
+.board-wrapper nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .5rem 1rem;
+  background: #333;
+  color: #fff;
+}
+
+.board {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.column {
+  flex: 1;
+  background: #e2e8f0;
+  border-radius: 6px;
+  padding: .5rem;
+  min-height: 60vh;
+}
+
+.column h3 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.card {
+  background: #fff;
+  padding: .5rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px #0002;
+  margin-bottom: .5rem;
+  cursor: grab;
+}
+
+.card-actions {
+  display: flex;
+  gap: .25rem;
+  justify-content: flex-end;
+}
+
+.log {
+  position: fixed;
+  right: 0;
+  top: 64px;
+  width: 220px;
+  height: calc(100vh - 64px);
+  overflow: auto;
+  background: #fff;
+  padding: .5rem 1rem;
+  border-left: 1px solid #ddd;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0005;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  min-width: 300px;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+}
+
+.stale-banner {
+  background-color: #ffeeba;
+  color: #856404;
+  padding: 4px 8px;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
