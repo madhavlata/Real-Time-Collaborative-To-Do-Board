@@ -11,13 +11,24 @@ const BOARD_ID = "BOARD123";
 export default function Board() {
   const [tasks, setTasks] = useState([]);
   const [actions, setActions] = useState([]);
+  const [userMap, setUserMap] = useState({}); //  ➜ { userId: username }
   const [showModal, setShowModal] = useState(false);
-  const [conflict, setConflict] = useState(null); // { mine, latest }
+  const [conflict, setConflict] = useState(null);
   const { logout } = useContext(AuthContext);
 
   /* ───────────── Fetch helpers ───────────── */
+  const fetchUsers = () =>
+    api.get(`/users/${BOARD_ID}`).then((r) => {
+      const map = {};
+      r.data.forEach((u) => (map[u._id] = u.username));
+      setUserMap(map);
+    });
+
   const fetchTasks = () =>
-    api.get(`/tasks/${BOARD_ID}`).then((r) => setTasks(r.data));
+    api.get(`/tasks/${BOARD_ID}`).then((r) => {
+      setTasks(r.data);
+      fetchUsers(); // refresh user list whenever tasks refresh
+    });
 
   const fetchActions = () =>
     api.get(`/actions/${BOARD_ID}`).then((r) => setActions(r.data));
@@ -28,9 +39,11 @@ export default function Board() {
     fetchActions();
     socket.emit("joinBoard", BOARD_ID);
     socket.on("tasksChanged", fetchTasks);
+    socket.on("actionLogged", fetchActions);
     return () => {
       socket.emit("leaveBoard", BOARD_ID);
       socket.off("tasksChanged", fetchTasks);
+      socket.off("actionLogged", fetchActions);
     };
   }, []);
 
@@ -43,6 +56,7 @@ export default function Board() {
       await api.put(`/tasks/${id}`, {
         status: newStatus,
         lastEdited: task.lastEdited,
+        move: true,
       });
     } catch (err) {
       if (err.response?.status === 409) {
@@ -71,9 +85,10 @@ export default function Board() {
             title={status}
             status={status}
             tasks={tasks}
+            userMap={userMap} /* ➜ pass map to show assignee */
             onDrop={handleDrop}
             onRefresh={fetchTasks}
-            onConflict={setConflict} // Pass conflict handler
+            onConflict={setConflict}
           />
         ))}
       </div>
@@ -94,7 +109,7 @@ export default function Board() {
             if (choice === "overwrite") {
               await api.put(`/tasks/${conflict.mine._id}`, {
                 ...conflict.mine,
-                lastEdited: conflict.latest.lastEdited, // overwrite with latest timestamp
+                lastEdited: conflict.latest.lastEdited,
               });
             }
             setConflict(null);

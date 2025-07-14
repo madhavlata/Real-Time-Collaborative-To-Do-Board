@@ -112,3 +112,10 @@ body {
   margin-bottom: 4px;
   font-size: 0.9rem;
 }
+
+.card small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: #555;
+}

@@ -8,6 +8,7 @@ export default function Column({
   onDrop,
   onRefresh,
   onConflict,
+  userMap,
 }) {
   return (
     <div
@@ -24,6 +25,7 @@ export default function Column({
             task={t}
             onRefresh={onRefresh}
             onConflict={onConflict}
+            userMap={userMap} // ➜ pass user map to TaskCard
           />
         ))}
     </div>

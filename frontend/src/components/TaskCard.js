@@ -3,12 +3,12 @@ import { api } from "../api";
 import { AuthContext } from "../contexts/AuthContext";
 import { socket } from "../socket"; // ← import the shared socket instance
 
-export default function TaskCard({ task, onRefresh, onConflict }) {
+export default function TaskCard({ task, onRefresh, onConflict, userMap }) {
   const { user } = useContext(AuthContext);
 
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
-  const [stale, setStale] = useState(false); // ⭐ new: is this edit draft stale?
+  const [stale, setStale] = useState(false);
 
   /* ───────────── Listen for live updates while editing ───────────── */
   useEffect(() => {
@@ -55,6 +55,11 @@ export default function TaskCard({ task, onRefresh, onConflict }) {
       alert(err.response?.data?.msg || "Smart Assign failed");
     }
   };
+  const handleDelete = async () => {
+    if (!window.confirm("Delete this task?")) return;
+    await api.delete(`/tasks/${task._id}`);
+    onRefresh();
+  };
 
   /* ─────────────── Render ─────────────── */
   return (
@@ -80,13 +85,20 @@ export default function TaskCard({ task, onRefresh, onConflict }) {
       ) : (
         <>
           <h4>{task.title}</h4>
-          <small>{task.assignedUser === user?.id ? "🧑‍💻 You" : "👤"}</small>
+          <small>
+            {task.assignedUser
+              ? task.assignedUser === user?.id
+                ? "🧑‍💻 You"
+                : `👤 ${userMap[task.assignedUser] || "User"}`
+              : "Unassigned"}
+          </small>
         </>
       )}
 
       <div className="card-actions">
         <button onClick={() => setEditing((v) => !v)}>✏</button>
         <button onClick={smartAssign}>🤖</button>
+        <button onClick={handleDelete}>🗑</button>
       </div>
     </div>
   );

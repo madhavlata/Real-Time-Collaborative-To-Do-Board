@@ -3,7 +3,9 @@ const Task = require("../models/Task");
 const Action = require("../models/Action");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
-
+const broadcastAction = (io, boardId) => {
+  io.to(boardId).emit("actionLogged");
+};
 /* ──────────────────────────────────────────────
    1.  LIST TASKS BY BOARD
 ───────────────────────────────────────────────*/
@@ -45,6 +47,7 @@ router.post("/", auth, async (req, res) => {
       type: "add",
       taskId: task._id,
     });
+    broadcastAction(req.io, boardId);
 
     req.io.to(boardId).emit("taskUpdated", task._id); // 👈 emit single‑task update
     req.io.to(boardId).emit("tasksChanged");
@@ -63,27 +66,33 @@ router.post("/:id/smart-assign", auth, async (req, res) => {
   const task = await Task.findById(req.params.id);
   if (!task) return res.status(404).json({ msg: "Task not found" });
 
-  // Count active tasks per user
-  const active = await Task.find({
+  // 1) Build counts of active tasks per user (Todo / In‑Progress)
+  const activeTasks = await Task.find({
     boardId: task.boardId,
     status: { $ne: "Done" },
     assignedUser: { $ne: null },
   });
   const counts = {};
-  active.forEach((t) => {
+  activeTasks.forEach((t) => {
     const uid = t.assignedUser.toString();
     counts[uid] = (counts[uid] || 0) + 1;
   });
 
-  // Choose least‑busy user
-  const userIds = [...new Set(active.map((t) => t.assignedUser.toString()))];
-  task.assignedUser = userIds.length
-    ? userIds.reduce(
-        (best, uid) => (counts[uid] < counts[best] ? uid : best),
-        userIds[0]
-      )
-    : req.user.id;
+  // 2) Fetch **all users** (or board members if you have separate list)
+  const allUsers = await User.find().select("_id username");
+  if (allUsers.length === 0)
+    return res.status(500).json({ msg: "No users available for assignment" });
 
+  // 3) Pick user with the fewest tasks (ties resolved by first in list)
+  let bestUser = allUsers[0]._id.toString();
+  allUsers.forEach((u) => {
+    const uid = u._id.toString();
+    if ((counts[uid] || 0) < (counts[bestUser] || 0)) {
+      bestUser = uid;
+    }
+  });
+
+  task.assignedUser = bestUser;
   task.lastEdited = Date.now();
   await task.save();
 
@@ -94,6 +103,7 @@ router.post("/:id/smart-assign", auth, async (req, res) => {
     taskId: task._id,
     detail: { assignedTo: task.assignedUser },
   });
+  broadcastAction(req.io, task.boardId);
 
   req.io.to(task.boardId).emit("taskUpdated", task._id); // 👈
   req.io.to(task.boardId).emit("tasksChanged");
@@ -121,9 +131,11 @@ router.put("/:id", auth, async (req, res) => {
   await Action.create({
     boardId: task.boardId,
     user: req.user.id,
-    type: "edit",
+    type: req.body.move ? "drag-drop" : "edit", // NEW
     taskId: task._id,
+    detail: req.body.move ? { newStatus: task.status } : undefined,
   });
+  broadcastAction(req.io, task.boardId);
 
   req.io.to(task.boardId).emit("taskUpdated", task._id); // 👈
   req.io.to(task.boardId).emit("tasksChanged");
@@ -143,6 +155,7 @@ router.delete("/:id", auth, async (req, res) => {
     type: "delete",
     taskId: task._id,
   });
+  broadcastAction(req.io, task.boardId);
 
   req.io.to(task.boardId).emit("taskUpdated", req.params.id); // 👈 notify deletion
   req.io.to(task.boardId).emit("tasksChanged");
