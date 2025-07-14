@@ -10,7 +10,11 @@ const broadcastAction = (io, boardId) => {
    1.  LIST TASKS BY BOARD
 ───────────────────────────────────────────────*/
 router.get("/:boardId", auth, async (req, res) => {
-  res.json(await Task.find({ boardId: req.params.boardId }));
+  const { page = 1, size = 10 } = req.query;
+  const tasks = await Task.find({ boardId: req.params.boardId })
+    .skip((page - 1) * size)
+    .limit(size);
+  res.json(tasks);
 });
 
 /* ──────────────────────────────────────────────

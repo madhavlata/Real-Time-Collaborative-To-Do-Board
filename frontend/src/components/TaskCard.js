@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { api } from "../api";
 import { AuthContext } from "../contexts/AuthContext";
 import { socket } from "../socket"; // ← import the shared socket instance
+import { motion } from "framer-motion";
 
 export default function TaskCard({ task, onRefresh, onConflict, userMap }) {
   const { user } = useContext(AuthContext);
@@ -63,10 +64,14 @@ export default function TaskCard({ task, onRefresh, onConflict, userMap }) {
 
   /* ─────────────── Render ─────────────── */
   return (
-    <div
+    <motion.div
       className="card"
       draggable
       onDragStart={(e) => e.dataTransfer.setData("id", task._id)}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
     >
       {editing ? (
         <>
@@ -85,6 +90,14 @@ export default function TaskCard({ task, onRefresh, onConflict, userMap }) {
       ) : (
         <>
           <h4>{task.title}</h4>
+          <span
+            className={
+              "badge " + task.priority.toLowerCase() // low | medium | high
+            }
+          >
+            {task.priority}
+          </span>
+
           <small>
             {task.assignedUser
               ? task.assignedUser === user?.id
@@ -100,6 +113,6 @@ export default function TaskCard({ task, onRefresh, onConflict, userMap }) {
         <button onClick={smartAssign}>🤖</button>
         <button onClick={handleDelete}>🗑</button>
       </div>
-    </div>
+    </motion.div>
   );
 }
