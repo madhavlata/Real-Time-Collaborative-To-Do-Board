@@ -17,7 +17,7 @@ A minimal Trello-like Kanban board that supports **multiple users collaborating 
 
 🔗 **Frontend**: https://real-time-collaborative-to-do-board-eight.vercel.app/
 🔗 **Backend**: https://real-time-collaborative-to-do-board-qzkn.onrender.com
-📽️ **Demo Video**: Will share soon
+📽️ **Demo Video**: https://youtu.be/8KvBGxkHdbE 
 📄 **Logic Document**: [Logic_Document.md](./Logic_Document.md)
 
 ## Features
@@ -124,7 +124,7 @@ To handle two users editing the **same task at the same time**:
 1. Each task has a `lastEdited` timestamp.
 2. When a user submits an edit, backend compares timestamps.
 3. If they differ, a `409 Conflict` is returned.
-4. Frontend shows a **dialog with both versions** (theirs and the latest).
+4. Frontend shows a **dialog with warning** .
 5. User can choose to:
    - **Overwrite** with their version
-   - **Merge** manually and resubmit
+   - **Refresh** manually and then do the updation if required
